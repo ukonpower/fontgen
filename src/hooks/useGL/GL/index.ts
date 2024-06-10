@@ -1,60 +1,80 @@
-import * as ORE from 'ore-three';
+import * as THREE from 'three';
 
-import { MainScene } from './MainScene';
-import { GlobalManager } from './MainScene/GlobalManager';
-import { AssetManager } from './MainScene/GlobalManager/AssetManager';
-
-declare global {
-	interface Window {
-		glCanvas: {
-			gManager: GlobalManager;
-			assetManager: AssetManager;
-			isSP: boolean;
-			mainScene: MainScene;
-		}
-	}
-}
-
-export class GL {
+export class GL extends THREE.EventDispatcher<any> {
 
 	public canvas: HTMLCanvasElement;
-
-	public controller: ORE.Controller;
-	public scene: MainScene;
+	public context: CanvasRenderingContext2D;
 
 	constructor() {
 
-		window.glCanvas = {} as any;
+		super();
 
-		/*------------------------
-			init ORE
-		------------------------*/
+		this.canvas = document.createElement( 'canvas' );
+		this.context = this.canvas.getContext( '2d' )!;
 
-		this.controller = new ORE.Controller();
+		this.canvas.width = 64;
+		this.canvas.height = 100;
 
-		this.scene = new MainScene( {
-			name: 'Main',
-		} );
+		const onResize = this.resize.bind( this );
 
-		this.canvas = this.scene.renderer.domElement;
+		window.addEventListener( 'resize', onResize );
 
-		this.controller.addLayer( this.scene );
+		const onDispose = () => {
+
+			window.removeEventListener( 'resize', onResize );
+
+			this.removeEventListener( 'dispose', onDispose );
+
+		};
+
+		this.addEventListener( 'dispose', onDispose );
+
+
+		setTimeout( () => {
+
+			this.resize();
+
+		}, 100 );
 
 	}
 
-	public setPointerElement( elm: HTMLElement ) {
+	public resize() {
 
-		this.controller.setPointerEventElement( elm );
+		const parent = this.canvas.parentElement;
+
+		if ( parent ) {
+
+			const bound = parent.getBoundingClientRect();
+
+			let width = bound.width;
+			let height = bound.height;
+
+			const aspect = width / height;
+
+			console.log( this.canvas.width / this.canvas.height );
+
+
+			if ( aspect < this.canvas.width / this.canvas.height ) {
+
+				height = width / aspect;
+
+			} else {
+
+				width = height * aspect;
+
+			}
+
+			this.canvas.style.width = width + "px";
+			this.canvas.style.height = height + "px";
+
+		}
 
 	}
+
 
 	public dispose() {
 
-		if ( this.controller ) {
-
-			this.controller.dispose();
-
-		}
+		this.dispatchEvent( { type: 'dispose' } );
 
 	}
 

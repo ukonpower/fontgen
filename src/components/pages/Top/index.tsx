@@ -11,13 +11,20 @@ export const TopPage = () => {
 	const glContext = useGL();
 
 	return <div className={style.top}>
-		<GLContext.Provider value={glContext}>
-			<PanelContainer >
-				<Panel title="Panel" >
-					<GLCanvas />
-				</Panel>
-			</PanelContainer>
-		</GLContext.Provider>
+		<PanelContainer >
+			<Panel title="Fontgen" >
+				<GLContext.Provider value={glContext}>
+					<div className={style.inner}>
+						<div className={style.canvas}>
+							<GLCanvas />
+						</div>
+						<div className={style.controls}>
+						aaa
+						</div>
+					</div>
+				</GLContext.Provider>
+			</Panel>
+		</PanelContainer>
 	</div>;
 
 };

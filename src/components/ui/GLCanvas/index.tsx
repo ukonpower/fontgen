@@ -16,8 +16,6 @@ export const GLCanvas = () => {
 			const canvas = wrapperElmRef.current.querySelectorAll( 'canvas' );
 			canvas.forEach( item => item.remove() );
 			wrapperElmRef.current.appendChild( gl.canvas );
-			gl.setPointerElement( wrapperElmRef.current );
-			gl.scene.setWrapperElement( wrapperElmRef.current );
 
 		}
 
