@@ -1,3 +1,4 @@
+import { Controls } from './Controls';
 import style from './index.module.scss';
 
 import { GLCanvas } from '~/components/ui/GLCanvas';
@@ -19,7 +20,7 @@ export const TopPage = () => {
 							<GLCanvas />
 						</div>
 						<div className={style.controls}>
-						aaa
+							<Controls fontPath={glContext.fontPath} />
 						</div>
 					</div>
 				</GLContext.Provider>

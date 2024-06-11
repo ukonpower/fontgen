@@ -1,0 +1,12 @@
+@use '~/styles/common' as *;
+
+.controls {
+	width: 100%;
+	height: 30vh;
+}
+
+.layers {
+	width: 100%;
+	height: 100%;
+	overflow-y: auto;
+}

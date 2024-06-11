@@ -1,0 +1,8 @@
+@use '~/styles/common' as *;
+
+.layer {
+	width: 100%;
+	height: 50px;
+	background-color: rgba($color: #fff, $alpha: 0.1);
+	margin: 5px 0;
+}
