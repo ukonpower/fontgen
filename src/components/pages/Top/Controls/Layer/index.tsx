@@ -16,9 +16,7 @@ type LayerProps = {
 export const Layer = ( props: LayerProps ) => {
 
 	const glContext = useContext( GLContext );
-
 	const type = props.point[ 0 ];
-	const pos = [ props.point[ 1 ], props.point[ 2 ] ];
 
 	return <div className={style.layer} data-selected={glContext.gl?.selectedPointIndex == props.index} data-layer={props.index}>
 		<div className={style.inner}>
@@ -27,37 +25,22 @@ export const Layer = ( props: LayerProps ) => {
 				glContext.gl?.selectPoint( props.index );
 
 			}}>
-				Layer { props.index }<br/>
-				posX: { pos[ 0 ] }<br/>
-				posY: { pos[ 1 ] }
-				<Value value={PointTypeList[ type ]} selectList={PointTypeList} onChange={( value ) => {
+				Layer: { props.index }
+				<div className={style.type}>
+					<Value value={PointTypeList[ type ]} selectList={PointTypeList} onChange={( value ) => {
 
-					glContext.gl?.setPointType( props.index, PointTypeList.indexOf( value as string ) );
+						glContext.gl?.setPointType( props.index, PointTypeList.indexOf( value as string ) );
 
-				}} />
-			</div>
-			<div className={style.add}>
-				<div className={style.btn}>
-					<Button onClick={() => {
-
-						glContext.gl?.addPoint( props.index, pos );
-						glContext.gl?.selectPoint( props.index );
-
-					}}>↑</Button>
+					}} />
 				</div>
+			</div>
+			<div className={style.controls}>
 				<div className={style.btn}>
 					<Button onClick={() => {
 
 						glContext.gl?.deletePoint( props.index );
 
 					}}>X</Button>
-				</div>
-				<div className={style.btn}>
-					<Button onClick={() => {
-
-						glContext.gl?.addPoint( props.index + 1, pos );
-
-					}}>↓</Button>
 				</div>
 			</div>
 		</div>

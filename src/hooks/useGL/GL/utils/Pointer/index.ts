@@ -15,6 +15,9 @@ export class Pointer extends EventEmitter {
 	public position: THREE.Vector2;
 	public delta: THREE.Vector2;
 
+	private touchStartPos: THREE.Vector2;
+	// private touchStartTime: number;
+
 	constructor() {
 
 		super();
@@ -22,6 +25,7 @@ export class Pointer extends EventEmitter {
 		this.position = new THREE.Vector2( NaN, NaN );
 		this.delta = new THREE.Vector2( NaN, NaN );
 		this.isTouching = false;
+		this.touchStartPos = new THREE.Vector2();
 
 		/*-------------------------------
 			WindowEvent
@@ -63,6 +67,9 @@ export class Pointer extends EventEmitter {
 		elm.addEventListener( 'pointerdown', onPointerDown );
 
 		const onUnRegister = ( e: any ) => {
+
+			console.log( e );
+
 
 			if ( elm.isEqualNode( e.elm ) ) {
 
@@ -159,8 +166,8 @@ export class Pointer extends EventEmitter {
 
 		let dispatch = false;
 
-		const x = posX - window.pageXOffset;
-		const y = posY - window.pageYOffset;
+		const x = posX - window.scrollX;
+		const y = posY - window.scrollY;
 
 		if ( type == 'start' ) {
 
@@ -169,6 +176,8 @@ export class Pointer extends EventEmitter {
 			this.setPos( x, y );
 
 			this.delta.set( 0, 0 );
+
+			this.touchStartPos.copy( this.position );
 
 			dispatch = true;
 

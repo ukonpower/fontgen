@@ -10,7 +10,6 @@ export const CHARSET = `!"#&'()+,-./:=?@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ`;
 export type EditorSetting = {
 	currentChar: string;
 	pathList: {[key: string]: number[]};
-	currentPath: number[]
 }
 
 export class GL extends EventEmitter {
@@ -42,30 +41,6 @@ export class GL extends EventEmitter {
 
 		this.touching = false;
 
-		this.setting = {
-			currentChar: 'A',
-			pathList: { "A": [
-				3,
-				0.18277079910441507,
-				0.8894120367839901,
-				0,
-				0.5390035878349174,
-				0.1438712152823456,
-				1,
-				0.8562325903479937,
-				0.8844192728255876,
-				3,
-				0.3751883403840053,
-				0.5399394454063108,
-				1,
-				0.6924174420883358,
-				0.5399394454063108
-			] },
-			currentPath: []
-		};
-
-		this.selectedPointIndex = 0;
-
 		/*-------------------------------
 			Resize
 		-------------------------------*/
@@ -95,7 +70,6 @@ export class GL extends EventEmitter {
 		-------------------------------*/
 
 		this.fontRenderer = new FontRenderer( this.canvas, this.context );
-		this.render();
 
 		/*-------------------------------
 			Pointer
@@ -124,15 +98,67 @@ export class GL extends EventEmitter {
 
 		} );
 
+		/*-------------------------------
+			Setting
+		-------------------------------*/
+
+		const localDataStr = localStorage.getItem( 'fontEditorSetting' );
+
+		if ( localDataStr ) {
+
+			this.setting = JSON.parse( localDataStr );
+
+		} else {
+
+			this.setting = {
+				currentChar: 'A',
+				pathList: { "A": [
+					3,
+					0.18277079910441507,
+					0.8894120367839901,
+					0,
+					0.5390035878349174,
+					0.1438712152823456,
+					1,
+					0.8562325903479937,
+					0.8844192728255876,
+					3,
+					0.3751883403840053,
+					0.5399394454063108,
+					1,
+					0.6924174420883358,
+					0.5399394454063108
+				] },
+			};
+
+		}
+
+		this.selectedPointIndex = 0;
+
+		/*-------------------------------
+			Render
+		-------------------------------*/
+
+		this.render();
+
+
+	}
+
+	public get currentPath() {
+
+		return this.setting.pathList[ this.setting.currentChar ] || [];
+
 	}
 
 	private onClick( e: MouseEvent ) {
+
 
 		const canvasBound = this.canvas.getBoundingClientRect();
 
 		const cursorPos = new THREE.Vector2( e.offsetX / canvasBound.width, e.offsetY / canvasBound.height );
 
-		const nearPosIndex = this.setting.currentPath.reduce( ( prev, _, i, arr ) => {
+
+		const nearPosIndex = this.currentPath.reduce( ( prev, _, i, arr ) => {
 
 			const x = arr[ i * 3 + 1 ];
 			const y = arr[ i * 3 + 2 ];
@@ -169,8 +195,8 @@ export class GL extends EventEmitter {
 
 		const delta = { x: e.delta.x * 1.0, y: e.delta.y * 1.0 };
 
-		this.setting.currentPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
-		this.setting.currentPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
+		this.currentPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
+		this.currentPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
 
 		this.render();
 
@@ -182,7 +208,9 @@ export class GL extends EventEmitter {
 
 		if ( ! this.touching ) return;
 
-		this.emit( "update/path", this.setting.currentPath.concat() );
+		// this.emit( "update/path", this.currentPath.concat() );
+
+		this.updateSetting();
 
 		this.touching = false;
 
@@ -193,6 +221,12 @@ export class GL extends EventEmitter {
 	/*-------------------------------
 		Point
 	-------------------------------*/
+
+	public get selectedPoint() {
+
+		return this.currentPath.slice( this.selectedPointIndex * 3, this.selectedPointIndex * 3 + 3 );
+
+	}
 
 	public selectPoint( index: number ) {
 
@@ -210,46 +244,35 @@ export class GL extends EventEmitter {
 
 		if ( index !== undefined ) {
 
-			this.setting.currentPath.splice( index * 3, 0, 0, pos[ 0 ], pos[ 1 ] );
+			this.currentPath.splice( index * 3, 0, 0, pos[ 0 ], pos[ 1 ] );
 
 			this.selectPoint( index );
 
 		} else {
 
-			this.setting.currentPath.push( 0, pos[ 0 ], pos[ 1 ] );
+			this.currentPath.push( 0, pos[ 0 ], pos[ 1 ] );
 
-			this.selectPoint( this.setting.currentPath.length / 3 - 1 );
+			this.selectPoint( this.currentPath.length / 3 - 1 );
 
 		}
 
-		this.setPath( this.setting.currentPath );
+		this.updateSetting();
 
 	}
 
 	public deletePoint( index: number ) {
 
-		this.setting.currentPath.splice( index * 3, 3 );
+		this.currentPath.splice( index * 3, 3 );
 
-		this.setPath( this.setting.currentPath );
+		this.updateSetting( );
 
 	}
 
 	public setPointType( index: number, type: number ) {
 
-		this.setting.currentPath[ index * 3 ] = type;
+		this.currentPath[ index * 3 ] = type;
 
-		this.setPath( this.setting.currentPath );
-
-	}
-
-	public setPath( fontPath: number[] ) {
-
-		this.setting.currentPath = fontPath;
-
-
-		this.render();
-
-		this.emit( "update/path", this.setting.currentPath.concat() );
+		this.updateSetting( );
 
 	}
 
@@ -277,15 +300,7 @@ export class GL extends EventEmitter {
 
 		this.setting.currentChar = char;
 
-		if ( this.setting.pathList[ char ] ) {
-
-			this.setPath( this.setting.pathList[ char ] );
-
-		} else {
-
-			this.setPath( [] );
-
-		}
+		this.render();
 
 		this.updateSetting();
 
@@ -293,13 +308,17 @@ export class GL extends EventEmitter {
 
 	private updateSetting() {
 
-		this.emit( "update/setting", this.setting );
+		this.render();
+
+		this.emit( "update/setting", { ...this.setting } );
+
+		localStorage.setItem( 'fontEditorSetting', JSON.stringify( this.setting ) );
 
 	}
 
 	private render() {
 
-		const drawPath = this.setting.currentPath.concat();
+		const drawPath = this.currentPath.concat();
 
 		for ( let i = 0; i < drawPath.length / 3; i ++ ) {
 
@@ -314,14 +333,14 @@ export class GL extends EventEmitter {
 
 		const context = this.fontRenderer.context;
 
-		const x = this.setting.currentPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
-		const y = this.setting.currentPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
+		const x = this.currentPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
+		const y = this.currentPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
 
 		// pointer
 
 		context.fillStyle = '#f50';
 		context.beginPath();
-		context.arc( x, y, 2, 0, Math.PI * 2 );
+		context.arc( x, y, this.canvas.width / 80, 0, Math.PI * 2 );
 		context.closePath();
 		context.fill();
 
@@ -331,8 +350,6 @@ export class GL extends EventEmitter {
 		context.lineWidth = 1;
 
 		context.globalCompositeOperation = 'lighter';
-
-		const res = 8;
 
 		for ( let i = 1; i < 8; i ++ ) {
 

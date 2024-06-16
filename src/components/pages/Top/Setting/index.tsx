@@ -5,10 +5,26 @@ import style from './index.module.scss';
 
 import { Button } from '~/components/ui/Parts/Button';
 import { GLContext } from '~/hooks/useGL';
+import { CHARSET } from '~/hooks/useGL/GL';
 
-export const Setting = ( ) => {
+export const Setting = () => {
 
 	const glContext = useContext( GLContext );
+
+	const onClickChangeChar = ( type: string ) => {
+
+		if ( ! glContext.setting?.currentChar ) return;
+
+		const currnetIndex = CHARSET.indexOf( glContext.setting?.currentChar );
+
+		if ( currnetIndex === - 1 ) return;
+
+		if ( type == "prev" && currnetIndex == 0 ) return;
+		if ( type == "next" && currnetIndex == CHARSET.length - 1 ) return;
+
+		glContext.gl?.setChar( CHARSET[ type == "prev" ? currnetIndex - 1 : currnetIndex + 1 ] );
+
+	};
 
 	return <div className={style.setting}>
 		<div className={style.info}>
@@ -16,10 +32,18 @@ export const Setting = ( ) => {
 		</div>
 		<div className={style.controls}>
 			<div className={style.btn}>
-				<Button>←</Button>
+				<Button onClick={() => {
+
+					onClickChangeChar( "prev" );
+
+				}}>←</Button>
 			</div>
 			<div className={style.btn}>
-				<Button>→</Button>
+				<Button onClick={() => {
+
+					onClickChangeChar( "next" );
+
+				}}>→</Button>
 			</div>
 		</div>
 	</div>;

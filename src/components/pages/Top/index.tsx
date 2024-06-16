@@ -14,7 +14,7 @@ export const TopPage = () => {
 
 	return <div className={style.top}>
 		<PanelContainer >
-			<Panel title="Fontgen" >
+			<Panel title="Fontgen" noPadding>
 				<GLContext.Provider value={glContext}>
 					<div className={style.inner}>
 						<div className={style.controls}>

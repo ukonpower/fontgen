@@ -26,7 +26,7 @@ export const useGL = () => {
 
 		};
 
-		onUpdatePath( gl.setting.currentPath );
+		onUpdatePath( gl.currentPath );
 
 		gl.addListener( 'update/path', onUpdatePath );
 
@@ -49,6 +49,8 @@ export const useGL = () => {
 			setSetting( setting );
 
 		};
+
+		onUpdateSetting( gl.setting );
 
 		gl.addListener( 'update/setting', onUpdateSetting );
 
