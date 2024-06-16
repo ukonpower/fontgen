@@ -23,7 +23,7 @@ export const Controls = ( props: ControlsProps ) => {
 			{
 				pahts.map( ( path, index ) => {
 
-					return <Layer key={index} index={index} path={path} />;
+					return <Layer key={index} index={index} point={path} />;
 
 				} )
 			}

@@ -17,7 +17,7 @@ export class GL extends EventEmitter {
 	private touching: boolean;
 
 	public fontPath: number[];
-	private selectedIndex: number;
+	public selectedPointIndex: number;
 
 	constructor() {
 
@@ -35,15 +35,12 @@ export class GL extends EventEmitter {
 
 		this.fontPath = [
 			0, 0.5, 0.5,
-			0, 0.8, 0.5,
-			0, 0.2, 0.8,
-			0, 0.5, 0.5,
 			0, 0.5, 0.5,
 			0, 0.5, 0.5,
 			0, 0.5, 0.5
 		];
 
-		this.selectedIndex = 0;
+		this.selectedPointIndex = 0;
 
 		/*-------------------------------
 			Resize
@@ -116,8 +113,8 @@ export class GL extends EventEmitter {
 
 		const delta = { x: e.delta.x * 1.0, y: e.delta.y * 1.0 };
 
-		this.fontPath[ this.selectedIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
-		this.fontPath[ this.selectedIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
+		this.fontPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
+		this.fontPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
 
 		this.render();
 
@@ -135,21 +132,75 @@ export class GL extends EventEmitter {
 
 	public selectPoint( index: number ) {
 
-		this.selectedIndex = index;
+		this.selectedPointIndex = index;
+
+		this.render();
+
+		this.emit( "update/point/select", this.selectedPointIndex );
+
+	}
+
+	public addPoint( index?: number ) {
+
+		if ( index !== undefined ) {
+
+			this.fontPath.splice( index * 3, 0, 0, 0.5, 0.5 );
+
+			this.selectPoint( index );
+
+		} else {
+
+			this.fontPath.push( 0, 0.5, 0.5 );
+
+			this.selectPoint( this.fontPath.length / 3 - 1 );
+
+		}
+
+		this.setPath( this.fontPath );
+
+	}
+
+	public deletePoint( index: number ) {
+
+		this.fontPath.splice( index * 3, 3 );
+
+		this.setPath( this.fontPath );
+
+	}
+
+	public setPointType( index: number, type: number ) {
+
+		this.fontPath[ index * 3 ] = type;
+
+		this.setPath( this.fontPath );
 
 	}
 
 	public setPath( fontPath: number[] ) {
 
-		this.fontRenderer.render( fontPath );
+		this.fontPath = fontPath;
 
-		this.emit( "update/path", this.selectedIndex );
+		this.render();
+
+		this.emit( "update/path", this.fontPath.concat() );
 
 	}
 
 	private render() {
 
 		this.fontRenderer.render( this.fontPath );
+
+		const context = this.fontRenderer.context;
+
+		const x = this.fontPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
+		const y = this.fontPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
+
+		context.fillStyle = '#f50';
+		context.beginPath();
+		context.arc( x, y, 2, 0, Math.PI * 2 );
+		context.closePath();
+		context.fill();
+
 
 	}
 

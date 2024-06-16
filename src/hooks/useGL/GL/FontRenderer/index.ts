@@ -1,15 +1,13 @@
-import { context } from "three/examples/jsm/nodes/Nodes.js";
 
 export class FontRenderer {
 
-	private canvas: HTMLCanvasElement;
-	private context: CanvasRenderingContext2D;
+	public canvas: HTMLCanvasElement;
+	public context: CanvasRenderingContext2D;
 
 	constructor( canvas: HTMLCanvasElement, context: CanvasRenderingContext2D ) {
 
 		this.canvas = canvas;
 		this.context = context;
-
 
 	}
 
@@ -32,13 +30,26 @@ export class FontRenderer {
 
 		for ( let i = 0; i < fontPath.length / 3; i ++ ) {
 
-			const path = fontPath.slice( i * 3, i * 3 + 3 );
+			const ci = i * 3;
+			const pi = ( i - 1 ) * 3;
 
-			const type = path[ 0 ];
+			const path = fontPath.slice( ci, ci + 3 );
+			const prevPath = fontPath.slice( pi, pi + 3 );
+
 			const x = path[ 1 ] * width;
 			const y = path[ 2 ] * height;
 
-			this.context.lineTo( x, y );
+			const prevPathType = prevPath[ 0 ];
+
+			if ( prevPathType === 0 ) {
+
+				this.context.lineTo( x, y );
+
+			} else if ( prevPathType === 1 ) {
+
+				this.context.moveTo( x, y );
+
+			}
 
 		}
 
