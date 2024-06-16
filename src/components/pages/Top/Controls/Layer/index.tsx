@@ -5,19 +5,22 @@ import style from './index.module.scss';
 import { Button } from '~/components/ui/Parts/Button';
 import { Value } from '~/components/ui/Parts/Property/Value';
 import { GLContext } from '~/hooks/useGL';
+import { PointTypeList } from '~/hooks/useGL/GL/FontRenderer';
 
 type LayerProps = {
 	index: number;
 	point: number[];
 };
 
-const PointTypeNameList = [ 'Connect', 'Close' ];
 
 export const Layer = ( props: LayerProps ) => {
 
 	const glContext = useContext( GLContext );
 
-	return <div className={style.layer} data-selected={glContext.gl?.selectedPointIndex == props.index}>
+	const type = props.point[ 0 ];
+	const pos = [ props.point[ 1 ], props.point[ 2 ] ];
+
+	return <div className={style.layer} data-selected={glContext.gl?.selectedPointIndex == props.index} data-layer={props.index}>
 		<div className={style.inner}>
 			<div className={style.info} onClick={() => {
 
@@ -25,11 +28,11 @@ export const Layer = ( props: LayerProps ) => {
 
 			}}>
 				Layer { props.index }<br/>
-				posX: { props.point[ 1 ] }<br/>
-				posY: { props.point[ 2 ] }
-				<Value value={PointTypeNameList[ props.point[ 0 ] ]} selectList={PointTypeNameList} onChange={( value ) => {
+				posX: { pos[ 0 ] }<br/>
+				posY: { pos[ 1 ] }
+				<Value value={PointTypeList[ type ]} selectList={PointTypeList} onChange={( value ) => {
 
-					glContext.gl?.setPointType( props.index, PointTypeNameList.indexOf( value as string ) );
+					glContext.gl?.setPointType( props.index, PointTypeList.indexOf( value as string ) );
 
 				}} />
 			</div>
@@ -37,8 +40,8 @@ export const Layer = ( props: LayerProps ) => {
 				<div className={style.btn}>
 					<Button onClick={() => {
 
-						glContext.gl?.addPoint( props.index );
-						glContext.gl?.selectPoint( props.index + 1 );
+						glContext.gl?.addPoint( props.index, pos );
+						glContext.gl?.selectPoint( props.index );
 
 					}}>↑</Button>
 				</div>
@@ -52,7 +55,7 @@ export const Layer = ( props: LayerProps ) => {
 				<div className={style.btn}>
 					<Button onClick={() => {
 
-						glContext.gl?.addPoint( props.index + 1 );
+						glContext.gl?.addPoint( props.index + 1, pos );
 
 					}}>↓</Button>
 				</div>

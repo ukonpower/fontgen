@@ -1,4 +1,6 @@
 
+export const PointTypeList = [ 'None', 'End', 'Close', "Line", "Fill" ];
+
 export class FontRenderer {
 
 	public canvas: HTMLCanvasElement;
@@ -24,9 +26,7 @@ export class FontRenderer {
 		this.context.strokeStyle = '#fff';
 		this.context.lineWidth = 4;
 
-		this.context.beginPath();
-
-		this.context.moveTo( fontPath[ 1 ] * width, fontPath[ 2 ] * height );
+		let currentType = - 1;
 
 		for ( let i = 0; i < fontPath.length / 3; i ++ ) {
 
@@ -39,22 +39,53 @@ export class FontRenderer {
 			const x = path[ 1 ] * width;
 			const y = path[ 2 ] * height;
 
+			const pathType = path[ 0 ];
 			const prevPathType = prevPath[ 0 ];
 
-			if ( prevPathType === 0 ) {
+			if ( pathType == 0 ) {
+
+				// none
 
 				this.context.lineTo( x, y );
 
-			} else if ( prevPathType === 1 ) {
+			} else if ( pathType == 3 || pathType == 4 ) {
 
+				// line
+
+				this.context.beginPath();
 				this.context.moveTo( x, y );
+
+				currentType = pathType;
+
+			} else if ( pathType == 1 || pathType == 2 ) {
+
+				// close
+
+				this.context.lineTo( x, y );
+
+				if ( pathType == 2 ) {
+
+					this.context.closePath();
+
+				}
+
+				if ( currentType == 3 ) {
+
+					this.context.stroke();
+
+				} else if ( currentType == 4 ) {
+
+					this.context.fill();
+
+				}
+
+				currentType = - 1;
 
 			}
 
 		}
 
 		this.context.closePath();
-		this.context.stroke();
 
 	}
 
