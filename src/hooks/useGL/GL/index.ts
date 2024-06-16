@@ -1,10 +1,17 @@
-import { i } from 'node_modules/vite/dist/node/types.d-aGj9QkWt';
 import { PointerEventArgs } from 'ore-three';
 import * as THREE from 'three';
 import EventEmitter from 'wolfy87-eventemitter';
 
 import { FontRenderer } from './FontRenderer';
 import { Pointer } from './utils/Pointer';
+
+export const CHARSET = `!"#&'()+,-./:=?@0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ`;
+
+export type EditorSetting = {
+	currentChar: string;
+	pathList: {[key: string]: number[]};
+	currentPath: number[]
+}
 
 export class GL extends EventEmitter {
 
@@ -17,8 +24,9 @@ export class GL extends EventEmitter {
 
 	private touching: boolean;
 
-	public fontPath: number[];
 	public selectedPointIndex: number;
+
+	public setting: EditorSetting;
 
 	constructor() {
 
@@ -34,23 +42,28 @@ export class GL extends EventEmitter {
 
 		this.touching = false;
 
-		this.fontPath = [
-			3,
-			0.18277079910441507,
-			0.8894120367839901,
-			0,
-			0.5390035878349174,
-			0.1438712152823456,
-			1,
-			0.8562325903479937,
-			0.8844192728255876,
-			3,
-			0.3751883403840053,
-			0.5399394454063108,
-			1,
-			0.6924174420883358,
-			0.5399394454063108
-		];
+		this.setting = {
+			currentChar: 'A',
+			pathList: { "A": [
+				3,
+				0.18277079910441507,
+				0.8894120367839901,
+				0,
+				0.5390035878349174,
+				0.1438712152823456,
+				1,
+				0.8562325903479937,
+				0.8844192728255876,
+				3,
+				0.3751883403840053,
+				0.5399394454063108,
+				1,
+				0.6924174420883358,
+				0.5399394454063108
+			] },
+			currentPath: []
+		};
+
 		this.selectedPointIndex = 0;
 
 		/*-------------------------------
@@ -119,7 +132,7 @@ export class GL extends EventEmitter {
 
 		const cursorPos = new THREE.Vector2( e.offsetX / canvasBound.width, e.offsetY / canvasBound.height );
 
-		const nearPosIndex = this.fontPath.reduce( ( prev, _, i, arr ) => {
+		const nearPosIndex = this.setting.currentPath.reduce( ( prev, _, i, arr ) => {
 
 			const x = arr[ i * 3 + 1 ];
 			const y = arr[ i * 3 + 2 ];
@@ -156,8 +169,8 @@ export class GL extends EventEmitter {
 
 		const delta = { x: e.delta.x * 1.0, y: e.delta.y * 1.0 };
 
-		this.fontPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
-		this.fontPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
+		this.setting.currentPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
+		this.setting.currentPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
 
 		this.render();
 
@@ -169,13 +182,17 @@ export class GL extends EventEmitter {
 
 		if ( ! this.touching ) return;
 
-		this.emit( "update/path", this.fontPath.concat() );
+		this.emit( "update/path", this.setting.currentPath.concat() );
 
 		this.touching = false;
 
 		e.pointerEvent.preventDefault();
 
 	}
+
+	/*-------------------------------
+		Point
+	-------------------------------*/
 
 	public selectPoint( index: number ) {
 
@@ -193,48 +210,46 @@ export class GL extends EventEmitter {
 
 		if ( index !== undefined ) {
 
-			this.fontPath.splice( index * 3, 0, 0, pos[ 0 ], pos[ 1 ] );
+			this.setting.currentPath.splice( index * 3, 0, 0, pos[ 0 ], pos[ 1 ] );
 
 			this.selectPoint( index );
 
 		} else {
 
-			this.fontPath.push( 0, pos[ 0 ], pos[ 1 ] );
+			this.setting.currentPath.push( 0, pos[ 0 ], pos[ 1 ] );
 
-			this.selectPoint( this.fontPath.length / 3 - 1 );
+			this.selectPoint( this.setting.currentPath.length / 3 - 1 );
 
 		}
 
-		console.log( this.fontPath );
-
-
-		this.setPath( this.fontPath );
+		this.setPath( this.setting.currentPath );
 
 	}
 
 	public deletePoint( index: number ) {
 
-		this.fontPath.splice( index * 3, 3 );
+		this.setting.currentPath.splice( index * 3, 3 );
 
-		this.setPath( this.fontPath );
+		this.setPath( this.setting.currentPath );
 
 	}
 
 	public setPointType( index: number, type: number ) {
 
-		this.fontPath[ index * 3 ] = type;
+		this.setting.currentPath[ index * 3 ] = type;
 
-		this.setPath( this.fontPath );
+		this.setPath( this.setting.currentPath );
 
 	}
 
 	public setPath( fontPath: number[] ) {
 
-		this.fontPath = fontPath;
+		this.setting.currentPath = fontPath;
+
 
 		this.render();
 
-		this.emit( "update/path", this.fontPath.concat() );
+		this.emit( "update/path", this.setting.currentPath.concat() );
 
 	}
 
@@ -254,9 +269,37 @@ export class GL extends EventEmitter {
 
 	}
 
+	/*-------------------------------
+		Editor
+	-------------------------------*/
+
+	public setChar( char: string ) {
+
+		this.setting.currentChar = char;
+
+		if ( this.setting.pathList[ char ] ) {
+
+			this.setPath( this.setting.pathList[ char ] );
+
+		} else {
+
+			this.setPath( [] );
+
+		}
+
+		this.updateSetting();
+
+	}
+
+	private updateSetting() {
+
+		this.emit( "update/setting", this.setting );
+
+	}
+
 	private render() {
 
-		const drawPath = this.fontPath.concat();
+		const drawPath = this.setting.currentPath.concat();
 
 		for ( let i = 0; i < drawPath.length / 3; i ++ ) {
 
@@ -271,8 +314,8 @@ export class GL extends EventEmitter {
 
 		const context = this.fontRenderer.context;
 
-		const x = this.fontPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
-		const y = this.fontPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
+		const x = this.setting.currentPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
+		const y = this.setting.currentPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
 
 		// pointer
 

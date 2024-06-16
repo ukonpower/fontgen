@@ -1,5 +1,6 @@
 import { Controls } from './Controls';
 import style from './index.module.scss';
+import { Setting } from './Setting';
 
 import { GLCanvas } from '~/components/ui/GLCanvas';
 import { Panel } from '~/components/ui/Parts/Panel';
@@ -16,6 +17,9 @@ export const TopPage = () => {
 			<Panel title="Fontgen" >
 				<GLContext.Provider value={glContext}>
 					<div className={style.inner}>
+						<div className={style.controls}>
+							<Setting />
+						</div>
 						<div className={style.canvas}>
 							<GLCanvas />
 						</div>

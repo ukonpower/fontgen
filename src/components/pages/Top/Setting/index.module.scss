@@ -1,0 +1,26 @@
+@use '~/styles/common' as *;
+
+.setting {
+	width: 100%;
+	height: 40px;
+	display: flex;
+	margin-bottom: 5px;
+	align-items: center;
+	justify-content: space-between;
+	background-color: #333;
+	padding: 4px 10px;
+}
+
+.btn {
+	width: 50px;
+	margin: 0 2px;
+}
+
+.controls {
+	display: flex;
+	height: 100%;
+}
+
+.info {
+	margin-right: 5px;
+}
