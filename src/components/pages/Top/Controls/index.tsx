@@ -1,5 +1,5 @@
 
-import { useContext, useEffect, useReducer, useRef } from 'react';
+import { useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 
 import style from './index.module.scss';
 import { Layer } from './Layer';
@@ -7,22 +7,30 @@ import { Layer } from './Layer';
 import { Button } from '~/components/ui/Parts/Button';
 import { GLContext } from '~/hooks/useGL';
 
-type ControlsProps = {
-	fontPath: number[];
-};
-
-export const Controls = ( props: ControlsProps ) => {
+export const Controls = ( ) => {
 
 	const glContext = useContext( GLContext );
 
-	const fontPath = props.fontPath;
-	const paths = [];
+	const paths = useMemo( () => {
 
-	for ( let i = 0; i < fontPath.length / 3; i ++ ) {
+		const fontPath = glContext.currentPath;
 
-		paths.push( [ fontPath[ i * 3 ], fontPath[ i * 3 + 1 ], fontPath[ i * 3 + 2 ] ] );
+		const paths = [];
 
-	}
+		if ( fontPath ) {
+
+			for ( let i = 0; i < fontPath.length / 3; i ++ ) {
+
+				paths.push( [ fontPath[ i * 3 ], fontPath[ i * 3 + 1 ], fontPath[ i * 3 + 2 ] ] );
+
+			}
+
+		}
+
+		return paths;
+
+	}, [ glContext.currentPath ] );
+
 
 	const layersElmRef = useRef<HTMLDivElement>( null );
 	const selectedPointIndexRef = useRef<number>( 0 );
@@ -45,24 +53,39 @@ export const Controls = ( props: ControlsProps ) => {
 
 	}, [ paths.length ] );
 
-	const selectedPoint = glContext.gl?.selectedPoint;
-	const selectedPointPos = selectedPoint && [ selectedPoint[ 1 ], selectedPoint[ 2 ] ] || [ 0, 0 ];
+	const selectedPoint = glContext.gl?.selectedPoint || null;
+	const selectedPointPos = selectedPoint && [ selectedPoint[ 1 ], selectedPoint[ 2 ] ] || undefined;
 
 	return <div className={style.controls}>
 		<div className={style.head}>
-			<div className={style.aaaa}></div>
 			<div className={style.add}>
 				<div className={style.add_btn}>
 					<Button onClick={()=>{
 
-						glContext.gl?.addPoint( glContext.gl.selectedPointIndex, selectedPointPos );
+						if ( selectedPoint ) {
+
+							glContext.gl?.addPoint( glContext.gl.selectedPointIndex, selectedPointPos );
+
+						} else {
+
+							glContext.gl?.addPoint( 0 );
+
+						}
 
 					}}>↑</Button>
 				</div>
 				<div className={style.add_btn}>
 					<Button onClick={()=>{
 
-						glContext.gl?.addPoint( glContext.gl.selectedPointIndex + 1, selectedPointPos );
+						if ( selectedPoint ) {
+
+							glContext.gl?.addPoint( glContext.gl.selectedPointIndex + 1, selectedPointPos );
+
+						} else {
+
+							glContext.gl?.addPoint( 0 );
+
+						}
 
 					}}>↓</Button>
 				</div>

@@ -24,7 +24,7 @@ export const TopPage = () => {
 							<GLCanvas />
 						</div>
 						<div className={style.controls}>
-							<Controls fontPath={glContext.fontPath} />
+							<Controls />
 						</div>
 					</div>
 				</GLContext.Provider>

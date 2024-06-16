@@ -25,7 +25,9 @@ export const Layer = ( props: LayerProps ) => {
 				glContext.gl?.selectPoint( props.index );
 
 			}}>
-				Layer: { props.index }
+				<div className={style.label}>
+					Point: { props.index }
+				</div>
 				<div className={style.type}>
 					<Value value={PointTypeList[ type ]} selectList={PointTypeList} onChange={( value ) => {
 

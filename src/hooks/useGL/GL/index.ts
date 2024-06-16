@@ -146,12 +146,15 @@ export class GL extends EventEmitter {
 
 	public get currentPath() {
 
-		return this.setting.pathList[ this.setting.currentChar ] || [];
+		const path = this.setting.pathList[ this.setting.currentChar ];
+
+		if ( path ) return path;
+
+		return this.setting.pathList[ this.setting.currentChar ] = [];
 
 	}
 
 	private onClick( e: MouseEvent ) {
-
 
 		const canvasBound = this.canvas.getBoundingClientRect();
 
@@ -208,8 +211,6 @@ export class GL extends EventEmitter {
 
 		if ( ! this.touching ) return;
 
-		// this.emit( "update/path", this.currentPath.concat() );
-
 		this.updateSetting();
 
 		this.touching = false;
@@ -223,6 +224,8 @@ export class GL extends EventEmitter {
 	-------------------------------*/
 
 	public get selectedPoint() {
+
+		if ( this.currentPath.length == 0 ) return null;
 
 		return this.currentPath.slice( this.selectedPointIndex * 3, this.selectedPointIndex * 3 + 3 );
 
@@ -299,8 +302,6 @@ export class GL extends EventEmitter {
 	public setChar( char: string ) {
 
 		this.setting.currentChar = char;
-
-		this.render();
 
 		this.updateSetting();
 

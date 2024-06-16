@@ -1,4 +1,4 @@
-import { createContext, useCallback, useEffect, useState } from 'react';
+import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 
 import { EditorSetting, GL } from './GL';
 
@@ -9,7 +9,6 @@ export const useGL = () => {
 
 	const [ gl, setGL ] = useState<GL>();
 
-	const [ fontPath, setFontPath ] = useState<number[]>( [] );
 	const [ selectedPointIndex, setSelectedPointIndex ] = useState<number>( 0 );
 	const [ setting, setSetting ] = useState<EditorSetting>( );
 
@@ -17,18 +16,6 @@ export const useGL = () => {
 
 		const gl = new GL();
 		setGL( gl );
-
-		// path
-
-		const onUpdatePath = ( path: number[] ) => {
-
-			setFontPath( path );
-
-		};
-
-		onUpdatePath( gl.currentPath );
-
-		gl.addListener( 'update/path', onUpdatePath );
 
 		// selected
 
@@ -56,7 +43,6 @@ export const useGL = () => {
 
 		return () => {
 
-			gl.removeListener( 'update/path', onUpdatePath );
 			gl.removeListener( 'update/point/select', onSelectPoint );
 			gl.removeListener( 'update/setting', onUpdateSetting );
 
@@ -67,12 +53,18 @@ export const useGL = () => {
 
 	}, [] );
 
+	const currentPath = useMemo( () => {
+
+		return ( setting?.pathList[ setting.currentChar ] || [] ).concat();
+
+	}, [ setting ] );
+
 
 	return {
 		gl,
-		fontPath,
 		selectedPointIndex,
-		setting
+		setting,
+		currentPath
 	};
 
 };
