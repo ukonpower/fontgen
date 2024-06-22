@@ -160,7 +160,6 @@ export class GL extends EventEmitter {
 
 		const cursorPos = new THREE.Vector2( e.offsetX / canvasBound.width, e.offsetY / canvasBound.height );
 
-
 		const nearPosIndex = this.currentPath.reduce( ( prev, _, i, arr ) => {
 
 			const x = arr[ i * 3 + 1 ];
@@ -177,6 +176,8 @@ export class GL extends EventEmitter {
 			return prev;
 
 		}, { index: - 1, dist: Infinity } ).index;
+
+		if ( nearPosIndex == - 1 ) return;
 
 		this.selectPoint( nearPosIndex );
 
