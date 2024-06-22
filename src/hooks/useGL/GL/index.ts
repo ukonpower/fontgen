@@ -23,7 +23,7 @@ export class GL extends EventEmitter {
 
 	private touching: boolean;
 
-	public selectedPointIndex: number;
+	public selectedPointIndex: number | null;
 
 	public setting: EditorSetting;
 
@@ -133,7 +133,7 @@ export class GL extends EventEmitter {
 
 		}
 
-		this.selectedPointIndex = 0;
+		this.selectedPointIndex = null;
 
 		/*-------------------------------
 			Render
@@ -160,7 +160,9 @@ export class GL extends EventEmitter {
 
 		const cursorPos = new THREE.Vector2( e.offsetX / canvasBound.width, e.offsetY / canvasBound.height );
 
-		const nearPosIndex = this.currentPath.reduce( ( prev, _, i, arr ) => {
+		const p = this.currentPath;
+
+		const nearPosIndex = p.reduce( ( prev, _, i, arr ) => {
 
 			const x = arr[ i * 3 + 1 ];
 			const y = arr[ i * 3 + 2 ];
@@ -177,9 +179,7 @@ export class GL extends EventEmitter {
 
 		}, { index: - 1, dist: Infinity } ).index;
 
-		if ( nearPosIndex == - 1 ) return;
-
-		this.selectPoint( nearPosIndex );
+		this.selectPoint( nearPosIndex == - 1 ? null : nearPosIndex );
 
 	}
 
@@ -199,8 +199,12 @@ export class GL extends EventEmitter {
 
 		const delta = { x: e.delta.x * 1.0, y: e.delta.y * 1.0 };
 
-		this.currentPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
-		this.currentPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
+		if ( this.selectedPointIndex !== null ) {
+
+			this.currentPath[ this.selectedPointIndex * 3 + 1 ] += delta.x / this.canvasDisplaySize.x;
+			this.currentPath[ this.selectedPointIndex * 3 + 2 ] += delta.y / this.canvasDisplaySize.y;
+
+		}
 
 		this.render();
 
@@ -228,11 +232,13 @@ export class GL extends EventEmitter {
 
 		if ( this.currentPath.length == 0 ) return null;
 
+		if ( this.selectedPointIndex === null ) return null;
+
 		return this.currentPath.slice( this.selectedPointIndex * 3, this.selectedPointIndex * 3 + 3 );
 
 	}
 
-	public selectPoint( index: number ) {
+	public selectPoint( index: number | null ) {
 
 		this.selectedPointIndex = index;
 
@@ -303,7 +309,7 @@ export class GL extends EventEmitter {
 	public setChar( char: string ) {
 
 		this.setting.currentChar = char;
-
+		this.selectPoint( null );
 		this.updateSetting();
 
 	}
@@ -311,6 +317,14 @@ export class GL extends EventEmitter {
 	private updateSetting() {
 
 		this.render();
+
+		const keys = Object.keys( this.setting.pathList );
+
+		keys.forEach( ( key ) => {
+
+			this.setting.pathList[ key ] = this.setting.pathList[ key ].filter( ( v ) => v !== null );
+
+		} );
 
 		this.emit( "update/setting", { ...this.setting } );
 
@@ -335,16 +349,20 @@ export class GL extends EventEmitter {
 
 		const context = this.fontRenderer.context;
 
-		const x = this.currentPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
-		const y = this.currentPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
-
 		// pointer
 
-		context.fillStyle = '#f50';
-		context.beginPath();
-		context.arc( x, y, this.canvas.width / 80, 0, Math.PI * 2 );
-		context.closePath();
-		context.fill();
+		if ( this.selectedPointIndex !== null ) {
+
+			const x = this.currentPath[ this.selectedPointIndex * 3 + 1 ] * this.canvas.width;
+			const y = this.currentPath[ this.selectedPointIndex * 3 + 2 ] * this.canvas.height;
+
+			context.fillStyle = '#f50';
+			context.beginPath();
+			context.arc( x, y, this.canvas.width / 80, 0, Math.PI * 2 );
+			context.closePath();
+			context.fill();
+
+		}
 
 		// grid
 
