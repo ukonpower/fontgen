@@ -27,9 +27,6 @@ export const Setting = () => {
 	};
 
 	return <div className={style.setting}>
-		<div className={style.info}>
-			{glContext.gl?.setting.currentChar}
-		</div>
 		<div className={style.controls}>
 			<div className={style.btn}>
 				<Button onClick={() => {
@@ -38,12 +35,24 @@ export const Setting = () => {
 
 				}}>←</Button>
 			</div>
+			<div className={style.char}>
+				{glContext.gl?.setting.currentChar}
+			</div>
 			<div className={style.btn}>
 				<Button onClick={() => {
 
 					onClickChangeChar( "next" );
 
 				}}>→</Button>
+			</div>
+		</div>
+		<div className={style.controls}>
+			<div className={style.btn}>
+				<Button onClick={() => {
+
+					glContext.gl?.export();
+
+				}}>Export</Button>
 			</div>
 		</div>
 	</div>;

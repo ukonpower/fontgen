@@ -378,6 +378,33 @@ export class GL extends EventEmitter {
 
 	}
 
+	/*-------------------------------
+		API
+	-------------------------------*/
+
+	public export() {
+
+		let data = window.localStorage.getItem( 'fontEditorSetting' );
+
+		if ( data ) {
+
+			data = JSON.parse( data );
+
+			const blob = new Blob( [ JSON.stringify( data ) ], { type: 'application/json' } );
+
+			const url = URL.createObjectURL( blob );
+
+			const a = document.createElement( 'a' );
+
+			a.href = url;
+			a.download = 'font.json';
+
+			a.click();
+
+		}
+
+	}
+
 	public resize() {
 
 		const parent = this.canvas.parentElement;

@@ -8,19 +8,28 @@
 	align-items: center;
 	justify-content: space-between;
 	background-color: #333;
-	padding: 4px 10px;
+	padding: 4px 0px;
 }
 
 .btn {
 	width: 50px;
 	margin: 0 2px;
+	height: 100%;
 }
 
 .controls {
 	display: flex;
 	height: 100%;
+	align-items: center;
 }
 
 .info {
 	margin-right: 5px;
+}
+
+.char {
+	padding: 0 10px;
+	min-width: 40px;
+	display: flex;
+	justify-content: center;
 }
