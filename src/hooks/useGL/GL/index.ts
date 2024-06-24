@@ -18,13 +18,13 @@ export class GL extends EventEmitter {
 	public context: CanvasRenderingContext2D;
 	private canvasDisplaySize: THREE.Vector2;
 
+	private grid: [number, number];
 	private fontRenderer: FontRenderer;
-	private pointer: Pointer;
 
+	private pointer: Pointer;
 	private touching: boolean;
 
 	public selectedPointIndex: number | null;
-
 	public setting: EditorSetting;
 
 	constructor() {
@@ -40,6 +40,7 @@ export class GL extends EventEmitter {
 		this.canvasDisplaySize = new THREE.Vector2();
 
 		this.touching = false;
+		this.grid = [ 8, 8 ];
 
 		/*-------------------------------
 			Resize
@@ -112,23 +113,7 @@ export class GL extends EventEmitter {
 
 			this.setting = {
 				currentChar: 'A',
-				pathList: { "A": [
-					3,
-					0.18277079910441507,
-					0.8894120367839901,
-					0,
-					0.5390035878349174,
-					0.1438712152823456,
-					1,
-					0.8562325903479937,
-					0.8844192728255876,
-					3,
-					0.3751883403840053,
-					0.5399394454063108,
-					1,
-					0.6924174420883358,
-					0.5399394454063108
-				] },
+				pathList: {}
 			};
 
 		}
@@ -288,15 +273,16 @@ export class GL extends EventEmitter {
 
 	private pointToGrid( pos: number[] ) {
 
-		const newPos = pos.concat();
+		const newPos = [];
 
 		const x = pos[ 0 ];
 		const y = pos[ 1 ];
 
-		const res = 8.0;
+		const gridX = this.grid[ 0 ];
+		const gridY = this.grid[ 1 ];
 
-		newPos[ 0 ] = Math.floor( x * res + 0.5 ) / res;
-		newPos[ 1 ] = Math.floor( y * res + 0.5 ) / res;
+		newPos[ 0 ] = Math.floor( x * gridX + 0.5 ) / gridX;
+		newPos[ 1 ] = Math.floor( y * gridY + 0.5 ) / gridY;
 
 		return newPos;
 
@@ -371,9 +357,9 @@ export class GL extends EventEmitter {
 
 		context.globalCompositeOperation = 'lighter';
 
-		for ( let i = 1; i < 8; i ++ ) {
+		for ( let i = 1; i < this.grid[ 0 ]; i ++ ) {
 
-			const x = this.canvas.width / 8 * i;
+			const x = this.canvas.width / this.grid[ 0 ] * i;
 
 			context.beginPath();
 			context.moveTo( x, 0 );
@@ -382,9 +368,9 @@ export class GL extends EventEmitter {
 
 		}
 
-		for ( let i = 1; i < 8; i ++ ) {
+		for ( let i = 1; i < this.grid[ 1 ]; i ++ ) {
 
-			const y = this.canvas.height / 8 * i;
+			const y = this.canvas.height / this.grid[ 1 ] * i;
 
 			context.beginPath();
 			context.moveTo( 0, y );
@@ -423,6 +409,197 @@ export class GL extends EventEmitter {
 		}
 
 	}
+
+	public exportBase64() {
+
+		const data = window.localStorage.getItem( 'fontEditorSetting' );
+
+		if ( data ) {
+
+			const setting = JSON.parse( data ) as EditorSetting;
+
+			const pathKeys = Object.keys( setting.pathList );
+
+			const base64Encode = ( uint8Array: Uint8Array ) => {
+
+				let binaryString = '';
+				for ( let i = 0; i < uint8Array.length; i ++ ) {
+
+					binaryString += String.fromCharCode( uint8Array[ i ] );
+
+				}
+
+				return btoa( binaryString );
+
+			};
+
+			const resShape: string[] = [];
+			const resType: string[] = [];
+
+			console.log( pathKeys );
+
+			pathKeys.forEach( ( key ) => {
+
+				const pathList = setting.pathList[ key ];
+
+				const shapeArray = [ pathList.length / 3 ];
+				const typeArray = [];
+
+				for ( let i = 0; i < pathList.length; i += 3 ) {
+
+					typeArray.push( pathList[ i ] );
+
+					const gridPos = this.pointToGrid( [ pathList[ i + 1 ], pathList[ i + 2 ] ] );
+
+					const x = gridPos[ 0 ] * this.grid[ 0 ] - 1;
+					const y = gridPos[ 1 ] * this.grid[ 1 ] - 1;
+
+					const girdIndex = y * ( this.grid[ 0 ] - 1 ) + x;
+
+					shapeArray.push( girdIndex );
+
+				}
+
+				// type
+
+				const typeBinaryString = typeArray.map( num => num.toString( 2 ).padStart( 3, '0' ) ).join( '' );
+
+				const typeByteArray = [];
+
+				for ( let i = 0; i < typeBinaryString.length; i += 8 ) {
+
+					const byte = ( typeBinaryString.slice( i, i + 8 ) + "00000000" ).slice( 0, 8 );
+
+					typeByteArray.push( parseInt( byte, 2 ) );
+
+				}
+
+				resType.push( base64Encode( new Uint8Array( typeByteArray ) ) );
+
+				// shape
+
+				const shapeBinaryString = shapeArray.map( num => num.toString( 2 ).padStart( 6, '0' ) ).join( '' );
+
+				const shapeByteArray = [];
+
+				for ( let i = 0; i < shapeBinaryString.length; i += 8 ) {
+
+					const byte = ( shapeBinaryString.slice( i, i + 8 ) + "00000000" ).slice( 0, 8 );
+
+
+					shapeByteArray.push( parseInt( byte, 2 ) );
+
+				}
+
+				resShape.push( base64Encode( new Uint8Array( shapeByteArray ) ) );
+
+			} );
+
+			const type = resType.join( "," );
+			const shape = resShape.join( "," );
+
+			const resData = {
+				pointType: type,
+				pointPos: shape,
+				charset: pathKeys.join( '' ),
+				grid: this.grid
+			};
+
+			const blob = new Blob( [ JSON.stringify( resData ) ], { type: 'application/json' } );
+
+			const url = URL.createObjectURL( blob );
+
+			const a = document.createElement( 'a' );
+
+			a.href = url;
+			a.download = 'font-base64.json';
+
+			a.click();
+
+			console.log( resData );
+
+			// this.decode( type, shape );
+
+		}
+
+	}
+
+	private decode( type: string, shape: string ) {
+
+		const typeArray = type.split( ',' );
+		const shapeArray = shape.split( ',' );
+
+		const base64Decode = ( base64String: string ) => {
+
+			const binaryString = atob( base64String );
+
+			const uint8Array = new Uint8Array( binaryString.length );
+
+			for ( let i = 0; i < binaryString.length; i ++ ) {
+
+				uint8Array[ i ] = binaryString.charCodeAt( i );
+
+			}
+
+			return uint8Array;
+
+		};
+
+		const decodeArray = ( uint8Array: Uint8Array, bit: number ) => {
+
+			let binaryString = '';
+
+			uint8Array.forEach( byte => {
+
+				binaryString += byte.toString( 2 ).padStart( 8, '0' );
+
+			} );
+
+			const array = [];
+
+			for ( let i = 0; i < binaryString.length; i += bit ) {
+
+				array.push( parseInt( binaryString.slice( i, i + bit ), 2 ) );
+
+			}
+
+			return array;
+
+		};
+
+		const out: number[][] = [];
+
+		for ( let i = 0; i < typeArray.length; i ++ ) {
+
+
+			const type = typeArray[ i ];
+			const resType = decodeArray( base64Decode( type ), 3 );
+
+			const shape = shapeArray[ i ];
+			const resShape = decodeArray( base64Decode( shape ), 6 );
+
+			const pathLength = resShape.shift() || 0;
+
+			const res = [];
+
+			for ( let i = 0; i < pathLength; i ++ ) {
+
+				res.push(
+					resType[ i ],
+					( resShape[ i ] % ( this.grid[ 0 ] - 1 ) + 1 ) / ( this.grid[ 0 ] ),
+					( Math.floor( resShape[ i ] / ( this.grid[ 0 ] - 1 ) ) + 1 ) / ( this.grid[ 1 ] )
+				);
+
+			}
+
+			out.push( res );
+
+		}
+
+		console.log( out );
+
+	}
+
 
 	public resize() {
 

@@ -52,7 +52,14 @@ export const Setting = () => {
 
 					glContext.gl?.export();
 
-				}}>Export</Button>
+				}}>JSON</Button>
+			</div>
+			<div className={style.btn}>
+				<Button onClick={() => {
+
+					glContext.gl?.exportBase64();
+
+				}}>Base64</Button>
 			</div>
 		</div>
 	</div>;
