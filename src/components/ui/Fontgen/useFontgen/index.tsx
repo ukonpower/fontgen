@@ -12,6 +12,7 @@ export const useFontgen = () => {
 
 	const [ selectedPointIndex, setSelectedPointIndex ] = useState<number>( 0 );
 	const [ setting, setSetting ] = useState<EditorSetting>( );
+	const [ visibleList, setVisibleList ] = useState( false );
 
 	useEffect( () => {
 
@@ -69,7 +70,9 @@ export const useFontgen = () => {
 		gl,
 		selectedPointIndex,
 		setting,
-		currentPath
+		currentPath,
+		visibleList,
+		setVisibleList
 	};
 
 };

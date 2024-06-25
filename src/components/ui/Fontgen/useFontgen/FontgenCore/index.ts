@@ -12,13 +12,31 @@ export type EditorSetting = {
 	pathList: {[key: string]: number[]};
 }
 
+const GRID = [ 8, 8 ];
+
+export const pointToGrid = ( pos: number[] ) => {
+
+	const newPos = [];
+
+	const x = pos[ 0 ];
+	const y = pos[ 1 ];
+
+	const gridX = GRID[ 0 ];
+	const gridY = GRID[ 1 ];
+
+	newPos[ 0 ] = Math.floor( x * gridX + 0.5 ) / gridX;
+	newPos[ 1 ] = Math.floor( y * gridY + 0.5 ) / gridY;
+
+	return newPos;
+
+};
+
 export class FontgenCore extends EventEmitter {
 
 	public canvas: HTMLCanvasElement;
 	public context: CanvasRenderingContext2D;
 	private canvasDisplaySize: THREE.Vector2;
 
-	private grid: [number, number];
 	private fontRenderer: FontRenderer;
 
 	private pointer: Pointer;
@@ -40,7 +58,6 @@ export class FontgenCore extends EventEmitter {
 		this.canvasDisplaySize = new THREE.Vector2();
 
 		this.touching = false;
-		this.grid = [ 8, 8 ];
 
 		/*-------------------------------
 			Resize
@@ -271,22 +288,22 @@ export class FontgenCore extends EventEmitter {
 
 	}
 
-	private pointToGrid( pos: number[] ) {
+	// private pointToGrid( pos: number[] ) {
 
-		const newPos = [];
+	// 	const newPos = [];
 
-		const x = pos[ 0 ];
-		const y = pos[ 1 ];
+	// 	const x = pos[ 0 ];
+	// 	const y = pos[ 1 ];
 
-		const gridX = this.grid[ 0 ];
-		const gridY = this.grid[ 1 ];
+	// 	const gridX = GRID[ 0 ];
+	// 	const gridY = GRID[ 1 ];
 
-		newPos[ 0 ] = Math.floor( x * gridX + 0.5 ) / gridX;
-		newPos[ 1 ] = Math.floor( y * gridY + 0.5 ) / gridY;
+	// 	newPos[ 0 ] = Math.floor( x * gridX + 0.5 ) / gridX;
+	// 	newPos[ 1 ] = Math.floor( y * gridY + 0.5 ) / gridY;
 
-		return newPos;
+	// 	return newPos;
 
-	}
+	// }
 
 	/*-------------------------------
 		Editor
@@ -324,7 +341,7 @@ export class FontgenCore extends EventEmitter {
 
 		for ( let i = 0; i < drawPath.length / 3; i ++ ) {
 
-			const pos = this.pointToGrid( [ drawPath[ i * 3 + 1 ], drawPath[ i * 3 + 2 ] ] );
+			const pos = pointToGrid( [ drawPath[ i * 3 + 1 ], drawPath[ i * 3 + 2 ] ] );
 
 			drawPath[ i * 3 + 1 ] = pos[ 0 ];
 			drawPath[ i * 3 + 2 ] = pos[ 1 ];
@@ -357,9 +374,9 @@ export class FontgenCore extends EventEmitter {
 
 		context.globalCompositeOperation = 'lighter';
 
-		for ( let i = 1; i < this.grid[ 0 ]; i ++ ) {
+		for ( let i = 1; i < GRID[ 0 ]; i ++ ) {
 
-			const x = this.canvas.width / this.grid[ 0 ] * i;
+			const x = this.canvas.width / GRID[ 0 ] * i;
 
 			context.beginPath();
 			context.moveTo( x, 0 );
@@ -368,9 +385,9 @@ export class FontgenCore extends EventEmitter {
 
 		}
 
-		for ( let i = 1; i < this.grid[ 1 ]; i ++ ) {
+		for ( let i = 1; i < GRID[ 1 ]; i ++ ) {
 
-			const y = this.canvas.height / this.grid[ 1 ] * i;
+			const y = this.canvas.height / GRID[ 1 ] * i;
 
 			context.beginPath();
 			context.moveTo( 0, y );
@@ -449,12 +466,12 @@ export class FontgenCore extends EventEmitter {
 
 					typeArray.push( pathList[ i ] );
 
-					const gridPos = this.pointToGrid( [ pathList[ i + 1 ], pathList[ i + 2 ] ] );
+					const gridPos = pointToGrid( [ pathList[ i + 1 ], pathList[ i + 2 ] ] );
 
-					const x = gridPos[ 0 ] * this.grid[ 0 ] - 1;
-					const y = gridPos[ 1 ] * this.grid[ 1 ] - 1;
+					const x = gridPos[ 0 ] * GRID[ 0 ] - 1;
+					const y = gridPos[ 1 ] * GRID[ 1 ] - 1;
 
-					const girdIndex = y * ( this.grid[ 0 ] - 1 ) + x;
+					const girdIndex = y * ( GRID[ 0 ] - 1 ) + x;
 
 					shapeArray.push( girdIndex );
 
@@ -502,7 +519,7 @@ export class FontgenCore extends EventEmitter {
 				pointType: type,
 				pointPos: shape,
 				charset: pathKeys.join( '' ),
-				grid: this.grid
+				grid: GRID
 			};
 
 			const blob = new Blob( [ JSON.stringify( resData ) ], { type: 'application/json' } );
@@ -586,8 +603,8 @@ export class FontgenCore extends EventEmitter {
 
 				res.push(
 					resType[ i ],
-					( resShape[ i ] % ( this.grid[ 0 ] - 1 ) + 1 ) / ( this.grid[ 0 ] ),
-					( Math.floor( resShape[ i ] / ( this.grid[ 0 ] - 1 ) ) + 1 ) / ( this.grid[ 1 ] )
+					( resShape[ i ] % ( GRID[ 0 ] - 1 ) + 1 ) / ( GRID[ 0 ] ),
+					( Math.floor( resShape[ i ] / ( GRID[ 0 ] - 1 ) ) + 1 ) / ( GRID[ 1 ] )
 				);
 
 			}
