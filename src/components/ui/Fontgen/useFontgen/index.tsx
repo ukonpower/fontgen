@@ -1,20 +1,21 @@
 import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 
-import { EditorSetting, GL } from './GL';
+import { FontgenCore, EditorSetting } from './FontgenCore';
 
-export type TGLContext = HooksContext<typeof useGL>;
-export const GLContext = createContext<TGLContext>( {} );
 
-export const useGL = () => {
+export type TFontgenContext = HooksContext<typeof useFontgen>;
+export const FontgenContext = createContext<TFontgenContext>( {} );
 
-	const [ gl, setGL ] = useState<GL>();
+export const useFontgen = () => {
+
+	const [ gl, setGL ] = useState<FontgenCore>();
 
 	const [ selectedPointIndex, setSelectedPointIndex ] = useState<number>( 0 );
 	const [ setting, setSetting ] = useState<EditorSetting>( );
 
 	useEffect( () => {
 
-		const gl = new GL();
+		const gl = new FontgenCore();
 		setGL( gl );
 
 		// selected

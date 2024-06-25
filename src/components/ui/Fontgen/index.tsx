@@ -1,12 +1,12 @@
 import { useContext, useRef, useEffect } from "react";
 
 import style from './index.module.scss';
+import { FontgenContext } from "./useFontgen";
 
-import { GLContext } from "~/hooks/useGL";
 
 export const GLCanvas = () => {
 
-	const { gl } = useContext( GLContext );
+	const { gl } = useContext( FontgenContext );
 	const wrapperElmRef = useRef<HTMLDivElement | null>( null );
 
 	useEffect( () => {

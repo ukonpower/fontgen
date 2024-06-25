@@ -4,16 +4,16 @@ import { useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import style from './index.module.scss';
 import { Layer } from './Layer';
 
+import { FontgenContext } from '~/components/ui/Fontgen/useFontgen';
 import { Button } from '~/components/ui/Parts/Button';
-import { GLContext } from '~/hooks/useGL';
 
 export const Controls = ( ) => {
 
-	const glContext = useContext( GLContext );
+	const fontgenContext = useContext( FontgenContext );
 
 	const paths = useMemo( () => {
 
-		const fontPath = glContext.currentPath;
+		const fontPath = fontgenContext.currentPath;
 
 		const paths = [];
 
@@ -29,12 +29,12 @@ export const Controls = ( ) => {
 
 		return paths;
 
-	}, [ glContext.currentPath ] );
+	}, [ fontgenContext.currentPath ] );
 
 
 	const layersElmRef = useRef<HTMLDivElement>( null );
 	const selectedPointIndexRef = useRef<number>( 0 );
-	selectedPointIndexRef.current = glContext.gl?.selectedPointIndex || 0;
+	selectedPointIndexRef.current = fontgenContext.gl?.selectedPointIndex || 0;
 
 	useEffect( () => {
 
@@ -53,8 +53,8 @@ export const Controls = ( ) => {
 
 	}, [ paths.length ] );
 
-	const selectedPoint = glContext.gl?.selectedPoint || null;
-	const selectedPointIndex = glContext.gl?.selectedPointIndex || null;
+	const selectedPoint = fontgenContext.gl?.selectedPoint || null;
+	const selectedPointIndex = fontgenContext.gl?.selectedPointIndex || null;
 	const selectedPointPos = selectedPoint && [ selectedPoint[ 1 ], selectedPoint[ 2 ] ] || undefined;
 
 	return <div className={style.controls}>
@@ -65,11 +65,11 @@ export const Controls = ( ) => {
 
 						if ( selectedPointIndex !== null ) {
 
-							glContext.gl?.addPoint( selectedPointIndex, selectedPointPos );
+							fontgenContext.gl?.addPoint( selectedPointIndex, selectedPointPos );
 
 						} else {
 
-							glContext.gl?.addPoint( 0 );
+							fontgenContext.gl?.addPoint( 0 );
 
 						}
 
@@ -80,11 +80,11 @@ export const Controls = ( ) => {
 
 						if ( selectedPointIndex !== null ) {
 
-							glContext.gl?.addPoint( selectedPointIndex + 1, selectedPointPos );
+							fontgenContext.gl?.addPoint( selectedPointIndex + 1, selectedPointPos );
 
 						} else {
 
-							glContext.gl?.addPoint( 0 );
+							fontgenContext.gl?.addPoint( 0 );
 
 						}
 

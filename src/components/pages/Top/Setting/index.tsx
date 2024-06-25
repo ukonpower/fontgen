@@ -3,13 +3,13 @@ import { useContext } from 'react';
 
 import style from './index.module.scss';
 
+import { FontgenContext } from '~/components/ui/Fontgen/useFontgen';
+import { CHARSET } from '~/components/ui/Fontgen/useFontgen/FontgenCore';
 import { Button } from '~/components/ui/Parts/Button';
-import { GLContext } from '~/hooks/useGL';
-import { CHARSET } from '~/hooks/useGL/GL';
 
 export const Setting = () => {
 
-	const glContext = useContext( GLContext );
+	const glContext = useContext( FontgenContext );
 
 	const onClickChangeChar = ( type: string ) => {
 

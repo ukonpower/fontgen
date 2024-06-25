@@ -2,10 +2,10 @@ import { useContext } from 'react';
 
 import style from './index.module.scss';
 
+import { FontgenContext } from '~/components/ui/Fontgen/useFontgen';
+import { PointTypeList } from '~/components/ui/Fontgen/useFontgen/FontgenCore/FontRenderer';
 import { Button } from '~/components/ui/Parts/Button';
 import { Value } from '~/components/ui/Parts/Property/Value';
-import { GLContext } from '~/hooks/useGL';
-import { PointTypeList } from '~/hooks/useGL/GL/FontRenderer';
 
 type LayerProps = {
 	index: number;
@@ -15,14 +15,14 @@ type LayerProps = {
 
 export const Layer = ( props: LayerProps ) => {
 
-	const glContext = useContext( GLContext );
+	const fontgenContext = useContext( FontgenContext );
 	const type = props.point[ 0 ];
 
-	return <div className={style.layer} data-selected={glContext.gl?.selectedPointIndex == props.index} data-layer={props.index}>
+	return <div className={style.layer} data-selected={fontgenContext.gl?.selectedPointIndex == props.index} data-layer={props.index}>
 		<div className={style.inner}>
 			<div className={style.info} onClick={() => {
 
-				glContext.gl?.selectPoint( props.index );
+				fontgenContext.gl?.selectPoint( props.index );
 
 			}}>
 				<div className={style.label}>
@@ -31,7 +31,7 @@ export const Layer = ( props: LayerProps ) => {
 				<div className={style.type}>
 					<Value value={PointTypeList[ type ]} selectList={PointTypeList} onChange={( value ) => {
 
-						glContext.gl?.setPointType( props.index, PointTypeList.indexOf( value as string ) );
+						fontgenContext.gl?.setPointType( props.index, PointTypeList.indexOf( value as string ) );
 
 					}} />
 				</div>
@@ -40,7 +40,7 @@ export const Layer = ( props: LayerProps ) => {
 				<div className={style.btn}>
 					<Button onClick={() => {
 
-						glContext.gl?.deletePoint( props.index );
+						fontgenContext.gl?.deletePoint( props.index );
 
 					}}>X</Button>
 				</div>

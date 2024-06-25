@@ -2,20 +2,20 @@ import { Controls } from './Controls';
 import style from './index.module.scss';
 import { Setting } from './Setting';
 
-import { GLCanvas } from '~/components/ui/GLCanvas';
+import { GLCanvas } from '~/components/ui/Fontgen';
+import { FontgenContext, useFontgen } from '~/components/ui/Fontgen/useFontgen';
 import { Panel } from '~/components/ui/Parts/Panel';
 import { PanelContainer } from '~/components/ui/Parts/PanelContainer';
-import { GLContext, useGL } from '~/hooks/useGL';
 
 
 export const TopPage = () => {
 
-	const glContext = useGL();
+	const fontgenContext = useFontgen();
 
 	return <div className={style.top}>
 		<PanelContainer >
 			<Panel title="Fontgen" noPadding>
-				<GLContext.Provider value={glContext}>
+				<FontgenContext.Provider value={fontgenContext}>
 					<div className={style.inner}>
 						<div className={style.controls}>
 							<Setting />
@@ -27,7 +27,7 @@ export const TopPage = () => {
 							<Controls />
 						</div>
 					</div>
-				</GLContext.Provider>
+				</FontgenContext.Provider>
 			</Panel>
 		</PanelContainer>
 	</div>;

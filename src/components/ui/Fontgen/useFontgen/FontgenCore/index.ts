@@ -12,7 +12,7 @@ export type EditorSetting = {
 	pathList: {[key: string]: number[]};
 }
 
-export class GL extends EventEmitter {
+export class FontgenCore extends EventEmitter {
 
 	public canvas: HTMLCanvasElement;
 	public context: CanvasRenderingContext2D;
