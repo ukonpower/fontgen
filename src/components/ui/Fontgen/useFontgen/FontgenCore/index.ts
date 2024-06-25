@@ -70,7 +70,7 @@ export class FontgenCore extends EventEmitter {
 			Renderer
 		-------------------------------*/
 
-		this.fontRenderer = new FontRenderer( this.canvas, this.context );
+		this.fontRenderer = new FontRenderer();
 
 		/*-------------------------------
 			Pointer
@@ -331,9 +331,9 @@ export class FontgenCore extends EventEmitter {
 
 		}
 
-		this.fontRenderer.render( drawPath );
+		this.fontRenderer.render( this.context, drawPath );
 
-		const context = this.fontRenderer.context;
+		const context = this.context;
 
 		// pointer
 
