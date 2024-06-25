@@ -25,7 +25,11 @@ export const useGL = () => {
 
 		};
 
-		onSelectPoint( gl.selectedPointIndex );
+		if ( gl.selectedPointIndex ) {
+
+			onSelectPoint( gl.selectedPointIndex );
+
+		}
 
 		gl.addListener( 'update/point/select', onSelectPoint );
 

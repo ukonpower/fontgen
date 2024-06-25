@@ -54,6 +54,7 @@ export const Controls = ( ) => {
 	}, [ paths.length ] );
 
 	const selectedPoint = glContext.gl?.selectedPoint || null;
+	const selectedPointIndex = glContext.gl?.selectedPointIndex || null;
 	const selectedPointPos = selectedPoint && [ selectedPoint[ 1 ], selectedPoint[ 2 ] ] || undefined;
 
 	return <div className={style.controls}>
@@ -62,9 +63,9 @@ export const Controls = ( ) => {
 				<div className={style.add_btn}>
 					<Button onClick={()=>{
 
-						if ( selectedPoint ) {
+						if ( selectedPointIndex !== null ) {
 
-							glContext.gl?.addPoint( glContext.gl.selectedPointIndex, selectedPointPos );
+							glContext.gl?.addPoint( selectedPointIndex, selectedPointPos );
 
 						} else {
 
@@ -77,9 +78,9 @@ export const Controls = ( ) => {
 				<div className={style.add_btn}>
 					<Button onClick={()=>{
 
-						if ( selectedPoint ) {
+						if ( selectedPointIndex !== null ) {
 
-							glContext.gl?.addPoint( glContext.gl.selectedPointIndex + 1, selectedPointPos );
+							glContext.gl?.addPoint( selectedPointIndex + 1, selectedPointPos );
 
 						} else {
 
